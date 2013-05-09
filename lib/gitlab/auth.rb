@@ -3,7 +3,7 @@ module Gitlab
     def find_for_ldap_auth(auth, signed_in_resource = nil)
       uid = auth.info.uid
       provider = auth.provider
-      email = auth.info.email.downcase unless auth.info.email.nil?
+      email = auth.extra.raw_info.userPrincipalName[0].to_s.downcase
       raise OmniAuth::Error, "LDAP accounts must provide an uid and email address" if uid.nil? or email.nil?
 
       if @user = User.find_by_extern_uid_and_provider(uid, provider)
@@ -22,11 +22,11 @@ module Gitlab
       uid = auth.info.uid || auth.uid
       uid = uid.to_s.force_encoding("utf-8")
       name = auth.info.name.to_s.force_encoding("utf-8")
-      email = auth.info.email.to_s.downcase unless auth.info.email.nil?
+      email = auth.extra.raw_info.userPrincipalName[0].to_s.downcase
 
       ldap_prefix = ldap ? '(LDAP) ' : ''
       raise OmniAuth::Error, "#{ldap_prefix}#{provider} does not provide an email"\
-        " address" if auth.info.email.blank?
+        " address" if email.blank?
 
       log.info "#{ldap_prefix}Creating user from #{provider} login"\
         " {uid => #{uid}, name => #{name}, email => #{email}}"
