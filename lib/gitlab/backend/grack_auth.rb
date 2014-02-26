@@ -15,7 +15,15 @@ module Grack
       @auth = Request.new(env)
 
       # Need this patch due to the rails mount
-      @env['PATH_INFO'] = @request.path
+      
+      # Need this if under RELATIVE_URL_ROOT
+      unless Gitlab.config.gitlab.relative_url_root.empty?
+        # If website is mounted using relative_url_root need to remove it first
+        @env['PATH_INFO'] = @request.path.sub(Gitlab.config.gitlab.relative_url_root,'')
+      else
+        @env['PATH_INFO'] = @request.path
+      end
+      
       @env['SCRIPT_NAME'] = ""
 
       auth!
@@ -64,19 +72,8 @@ module Grack
     end
 
     def authenticate_user(login, password)
-      user = User.find_by_email(login) || User.find_by_username(login)
-
-      # If the provided login was not a known email or username
-      # then user is nil
-      if user.nil? || user.ldap_user?
-        # Second chance - try LDAP authentication
-        return nil unless ldap_conf.enabled
-
-        auth = Gitlab::Auth.new
-        auth.ldap_auth(login, password)
-      else
-        return user if user.valid_password?(password)
-      end
+      auth = Gitlab::Auth.new
+      auth.find(login, password)
     end
 
     def authorize_request(service)

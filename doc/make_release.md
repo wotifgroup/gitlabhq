@@ -8,7 +8,7 @@ NOTE: This is a developer guide. If you are trying to install GitLab see the lat
 
 ### From x.x to x.x
 
-#### 0. Any major changes? Database updates? Web server change? File strucuture changes?
+#### 0. Any major changes? Database updates? Web server change? File structure changes?
 
 #### 1. Make backup
 
@@ -29,7 +29,7 @@ Check if any of these changed since last release (~22nd of last month depending 
 * https://github.com/gitlabhq/gitlabhq/commits/master/lib/support/nginx/gitlab
 * https://github.com/gitlabhq/gitlab-shell/commits/master/config.yml.example
 * https://github.com/gitlabhq/gitlabhq/commits/master/config/gitlab.yml.example
-* https://github.com/gitlabhq/gitlabhq/commits/master/config/puma.rb.example
+* https://github.com/gitlabhq/gitlabhq/commits/master/config/unicorn.rb.example
 * https://github.com/gitlabhq/gitlabhq/commits/master/config/database.yml.mysql
 * https://github.com/gitlabhq/gitlabhq/commits/master/config/database.yml.postgresql
 

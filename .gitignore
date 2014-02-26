@@ -19,7 +19,6 @@ config/gitlab.yml
 config/database.yml
 config/initializers/omniauth.rb
 config/unicorn.rb
-config/puma.rb
 config/resque.yml
 config/aws.yml
 db/data.yml
@@ -30,3 +29,5 @@ vendor/bundle/*
 rails_best_practices_output.html
 doc/code/*
 .secret
+*.log
+public/uploads.*
