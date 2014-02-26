@@ -91,9 +91,9 @@ Remove the old Ruby 1.8 if present
 Download Ruby and compile it:
 
     mkdir /tmp/ruby && cd /tmp/ruby
-    curl --progress ftp://ftp.ruby-lang.org/pub/ruby/2.0/ruby-2.0.0-p247.tar.gz | tar xz
-    cd ruby-2.0.0-p247
-    ./configure
+    curl --progress ftp://ftp.ruby-lang.org/pub/ruby/2.0/ruby-2.0.0-p353.tar.gz | tar xz
+    cd ruby-2.0.0-p353
+    ./configure --disable-install-rdoc
     make
     sudo make install
 
@@ -111,7 +111,7 @@ Create a `git` user for Gitlab:
 
 # 4. GitLab shell
 
-GitLab Shell is a ssh access and repository management software developed specially for GitLab.
+GitLab Shell is an ssh access and repository management software developed specially for GitLab.
 
     # Go to home directory
     cd /home/git
@@ -153,10 +153,10 @@ To setup the MySQL/PostgreSQL database and dependencies please see [`doc/install
     cd /home/git/gitlab
 
     # Checkout to stable release
-    sudo -u git -H git checkout 6-0-stable
+    sudo -u git -H git checkout 6-1-stable
 
 **Note:**
-You can change `6-0-stable` to `master` if you want the *bleeding edge* version, but never install master on a production server!
+You can change `6-1-stable` to `master` if you want the *bleeding edge* version, but never install master on a production server!
 
 ## Configure it
 

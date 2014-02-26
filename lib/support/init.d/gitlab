@@ -248,7 +248,7 @@ case "$1" in
         restart
         ;;
   reload|force-reload)
-  reload
+	reload
         ;;
   status)
         status
