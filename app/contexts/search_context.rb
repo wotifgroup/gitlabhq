@@ -7,13 +7,14 @@ class SearchContext
 
   def execute
     query = params[:search]
+    query = Shellwords.shellescape(query) if query.present?
 
     return result unless query.present?
 
     projects = Project.where(id: project_ids)
     result[:projects] = projects.search(query).limit(20)
 
-    # Search inside singe project
+    # Search inside single project
     project = projects.first if projects.length == 1
 
     if params[:search_code].present?
