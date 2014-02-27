@@ -91,6 +91,14 @@ module Gitlab
           'ldap'
         end
 
+        def email
+          if auth.info.email.nil?
+            auth.extra.raw_info.userPrincipalName[0].to_s.downcase
+          else
+            auth.info.email.downcase
+          end
+        end
+
         def raise_error(message)
           raise OmniAuth::Error, "(LDAP) " + message
         end
