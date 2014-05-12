@@ -33,7 +33,7 @@ module Gitlab
       end
 
       def create
-        output, status = popen("git clone #{project.repository.path_to_repo} #{path}",
+        output, status = popen(%W(git clone -- #{project.repository.path_to_repo} #{path}),
                                Gitlab.config.satellites.path)
 
         log("PID: #{project.id}: git clone #{project.repository.path_to_repo} #{path}")
@@ -123,7 +123,7 @@ module Gitlab
         remotes.each { |name| repo.git.remote(default_options,'rm', name)}
       end
 
-      # Updates the satellite from Gitolite
+      # Updates the satellite from bare repo
       #
       # Note: this will only update remote branches (i.e. origin/*)
       def update_from_source!

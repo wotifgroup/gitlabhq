@@ -2,12 +2,6 @@ require "spec_helper"
 
 describe GollumWiki do
 
-  def create_temp_repo(path)
-    FileUtils.mkdir_p path
-    command = "git init --quiet #{path};"
-    system(command)
-  end
-
   def remove_temp_repo(path)
     FileUtils.rm_rf path
   end
@@ -83,6 +77,27 @@ describe GollumWiki do
     it "raises CouldNotCreateWikiError if it can't create the wiki repository" do
       GollumWiki.any_instance.stub(:init_repo).and_return(false)
       expect { GollumWiki.new(project, user).wiki }.to raise_exception(GollumWiki::CouldNotCreateWikiError)
+    end
+  end
+
+  describe "#empty?" do
+    context "when the wiki repository is empty" do
+      before do
+        Gitlab::Shell.any_instance.stub(:add_repository) do
+          create_temp_repo("#{Rails.root}/tmp/test-git-base-path/non-existant.wiki.git")
+        end
+        project.stub(:path_with_namespace).and_return("non-existant")
+      end
+
+      its(:empty?) { should be_true }
+    end
+
+    context "when the wiki has pages" do
+      before do
+        create_page("index", "This is an awesome new Gollum Wiki")
+      end
+
+      its(:empty?) { should be_false }
     end
   end
 

@@ -1,7 +1,7 @@
 require 'spec_helper'
 
 describe Projects::TreeController do
-  let(:project) { create(:project_with_code) }
+  let(:project) { create(:project) }
   let(:user)    { create(:user) }
 
   before do
@@ -18,7 +18,7 @@ describe Projects::TreeController do
     # Make sure any errors accessing the tree in our views bubble up to this spec
     render_views
 
-    before { get :show, project_id: project.code, id: id }
+    before { get :show, project_id: project.to_param, id: id }
 
     context "valid branch, no path" do
       let(:id) { 'master' }

@@ -22,17 +22,25 @@ class ProjectTeam
   end
 
   def find(user_id)
-    user = project.users.find_by_id(user_id)
+    user = project.users.find_by(id: user_id)
 
     if group
-      user ||= group.users.find_by_id(user_id)
+      user ||= group.users.find_by(id: user_id)
     end
 
     user
   end
 
   def find_tm(user_id)
-    project.users_projects.find_by_user_id(user_id)
+    tm = project.users_projects.find_by(user_id: user_id)
+
+    # If user is not in project members
+    # we should check for group membership
+    if group && !tm
+      tm = group.users_groups.find_by(user_id: user_id)
+    end
+
+    tm
   end
 
   def add_user(user, access)
@@ -54,6 +62,10 @@ class ProjectTeam
   # Remove all users from project team
   def truncate
     UsersProject.truncate_team(project)
+  end
+
+  def users
+    members
   end
 
   def members
@@ -79,9 +91,8 @@ class ProjectTeam
   def import(source_project)
     target_project = project
 
-    source_team = source_project.users_projects.all
-    target_team = target_project.users_projects.all
-    target_user_ids = target_team.map(&:user_id)
+    source_team = source_project.users_projects.to_a
+    target_user_ids = target_project.users_projects.pluck(:user_id)
 
     source_team.reject! do |tm|
       # Skip if user already present in team

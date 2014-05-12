@@ -1,4 +1,5 @@
 class GollumWiki
+  include Gitlab::ShellAdapter
 
   MARKUPS = {
     "Markdown" => :markdown,
@@ -33,7 +34,7 @@ class GollumWiki
   end
 
   def http_url_to_repo
-    http_url = [Gitlab.config.gitlab.url, "/", path_with_namespace, ".git"].join('')
+    [Gitlab.config.gitlab.url, "/", path_with_namespace, ".git"].join('')
   end
 
   # Returns the Gollum::Wiki object.
@@ -43,6 +44,10 @@ class GollumWiki
     rescue Grit::NoSuchPathError
       create_repo!
     end
+  end
+
+  def empty?
+    pages.empty?
   end
 
   # Returns an Array of Gitlab WikiPage instances or an
@@ -107,10 +112,6 @@ class GollumWiki
 
   def default_message(action, title)
     "#{@user.username} #{action} page: #{title}"
-  end
-
-  def gitlab_shell
-    @gitlab_shell ||= Gitlab::Shell.new
   end
 
   def path_to_repo

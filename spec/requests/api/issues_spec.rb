@@ -2,6 +2,8 @@ require 'spec_helper'
 
 describe API::API do
   include ApiHelpers
+  before(:each) { ActiveRecord::Base.observers.enable(:user_observer) }
+  after(:each) { ActiveRecord::Base.observers.disable(:user_observer) }
 
   let(:user) { create(:user) }
   let!(:project) { create(:project, namespace: user.namespace ) }
@@ -40,6 +42,7 @@ describe API::API do
       get api("/projects/#{project.id}/issues/#{issue.id}", user)
       response.status.should == 200
       json_response['title'].should == issue.title
+      json_response['iid'].should == issue.iid
     end
 
     it "should return 404 if issue id not found" do
@@ -95,6 +98,18 @@ describe API::API do
     it "should delete a project issue" do
       delete api("/projects/#{project.id}/issues/#{issue.id}", user)
       response.status.should == 405
+    end
+  end
+
+  describe "PUT /projects/:id/issues/:issue_id to test observer on close" do
+    before { enable_observers }
+    after { disable_observers }
+
+    it "should create an activity event when an issue is closed" do
+      Event.should_receive(:create)
+
+      put api("/projects/#{project.id}/issues/#{issue.id}", user),
+        state_event: "close"
     end
   end
 end

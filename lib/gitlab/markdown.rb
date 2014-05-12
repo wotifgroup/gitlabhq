@@ -63,7 +63,7 @@ module Gitlab
         insert_piece($1)
       end
 
-      sanitize text.html_safe, attributes: ActionView::Base.sanitized_allowed_attributes + %w(id class)
+      sanitize text.html_safe, attributes: ActionView::Base.sanitized_allowed_attributes + %w(id class), tags: ActionView::Base.sanitized_allowed_tags + %w(table tr td th)
     end
 
     private
@@ -98,7 +98,7 @@ module Gitlab
       (?<prefix>\W)?                         # Prefix
       (                                      # Reference
          @(?<user>[a-zA-Z][a-zA-Z0-9_\-\.]*) # User name
-        |\#(?<issue>([a-zA-Z]+-)?\d+)        # Issue ID
+        |\#(?<issue>([a-zA-Z\-]+-)?\d+)      # Issue ID
         |!(?<merge_request>\d+)              # MR ID
         |\$(?<snippet>\d+)                   # Snippet ID
         |(?<commit>[\h]{6,40})               # Commit ID
@@ -152,7 +152,7 @@ module Gitlab
     #
     # Returns boolean
     def valid_emoji?(emoji)
-      Emoji.names.include? emoji
+      Emoji.find_by_name emoji
     end
 
     # Private: Dispatches to a dedicated processing method based on reference
@@ -181,7 +181,7 @@ module Gitlab
     end
 
     def reference_merge_request(identifier)
-      if merge_request = @project.merge_requests.where(id: identifier).first
+      if merge_request = @project.merge_requests.where(iid: identifier).first
         link_to("!#{identifier}", project_merge_request_url(@project, merge_request), html_options.merge(title: "Merge Request: #{merge_request.title}", class: "gfm gfm-merge_request #{html_options[:class]}"))
       end
     end

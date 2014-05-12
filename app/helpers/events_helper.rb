@@ -28,7 +28,7 @@ module EventsHelper
                end
 
     content_tag :div, class: "filter_icon #{inactive}" do
-      link_to dashboard_path, class: 'has_tooltip event_filter_link', id: "#{key}_event_filter", 'data-original-title' => tooltip do
+      link_to request.path, class: 'has_tooltip event_filter_link', id: "#{key}_event_filter", 'data-original-title' => tooltip do
         content_tag :i, nil, class: icon_for_event[key]
       end
     end
@@ -90,27 +90,23 @@ module EventsHelper
     if event.note? && event.note_commit?
       project_commit_path(event.project, event.note_target)
     else
-      url_for([event.project, event.note_target])
+      polymorphic_path([event.project, event.note_target], anchor: dom_id(event.target))
     end
   end
 
   def event_note_title_html(event)
     if event.note_target
       if event.note_commit?
-        link_to project_commit_path(event.project, event.note_commit_id), class: "commit_short_id" do
+        link_to project_commit_path(event.project, event.note_commit_id, anchor: dom_id(event.target)), class: "commit_short_id" do
           "#{event.note_target_type} #{event.note_short_commit_id}"
         end
       elsif event.note_project_snippet?
         link_to(project_snippet_path(event.project, event.note_target)) do
-          content_tag :strong do
-            "#{event.note_target_type} ##{truncate event.note_target_id}"
-          end
+          "#{event.note_target_type} ##{truncate event.note_target_id}"
         end
       else
         link_to event_note_target_path(event) do
-          content_tag :strong do
-            "#{event.note_target_type} ##{truncate event.note_target_id}"
-          end
+          "#{event.note_target_type} ##{truncate event.note_target_iid}"
         end
       end
     elsif event.wall_note?
@@ -123,6 +119,14 @@ module EventsHelper
   end
 
   def event_note(text)
-    sanitize(markdown(truncate(text, length: 150)), tags: %w(a img b pre p))
+    text = first_line(text)
+    text = truncate(text, length: 150)
+    sanitize(markdown(text), tags: %w(a img b pre p))
+  end
+
+  def event_commit_title(message)
+    escape_once(truncate(message.split("\n").first, length: 70))
+  rescue
+    "--broken encoding"
   end
 end

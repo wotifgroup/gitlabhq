@@ -2,8 +2,7 @@ class Admin::UsersController < Admin::ApplicationController
   before_filter :user, only: [:show, :edit, :update, :destroy]
 
   def index
-    @users = User.scoped
-    @users = @users.filter(params[:filter])
+    @users = User.filter(params[:filter])
     @users = @users.search(params[:name]) if params[:name].present?
     @users = @users.alphabetically.page(params[:page])
   end
@@ -13,7 +12,7 @@ class Admin::UsersController < Admin::ApplicationController
   end
 
   def new
-    @user = User.new.with_defaults
+    @user = User.build_user
   end
 
   def edit
@@ -44,9 +43,11 @@ class Admin::UsersController < Admin::ApplicationController
       password_expires_at: Time.now
     }
 
-    @user = User.new(params[:user].merge(opts), as: :admin)
+    @user = User.build_user(params[:user].merge(opts), as: :admin)
     @user.admin = (admin && admin.to_i > 0)
     @user.created_by_id = current_user.id
+    @user.generate_password
+    @user.skip_confirmation!
 
     respond_to do |format|
       if @user.save
@@ -67,10 +68,13 @@ class Admin::UsersController < Admin::ApplicationController
       params[:user].delete(:password_confirmation)
     end
 
-    user.admin = (admin && admin.to_i > 0)
+    if admin.present?
+      user.admin = !admin.to_i.zero?
+    end
 
     respond_to do |format|
       if user.update_attributes(params[:user], as: :admin)
+        user.confirm!
         format.html { redirect_to [:admin, user], notice: 'User was successfully updated.' }
         format.json { head :ok }
       else
@@ -83,9 +87,10 @@ class Admin::UsersController < Admin::ApplicationController
   end
 
   def destroy
-    if user.personal_projects.count > 0
-      redirect_to admin_users_path, alert: "User is a project owner and can't be removed." and return
-    end
+    # 1. Remove groups where user is the only owner
+    user.solo_owned_groups.map(&:destroy)
+
+    # 2. Remove user with all authored content including personal projects
     user.destroy
 
     respond_to do |format|
@@ -97,6 +102,6 @@ class Admin::UsersController < Admin::ApplicationController
   protected
 
   def user
-    @user ||= User.find_by_username!(params[:id])
+    @user ||= User.find_by!(username: params[:id])
   end
 end

@@ -1,10 +1,11 @@
-class ProjectsController < Projects::ApplicationController
-  skip_before_filter :project, only: [:new, :create]
-  skip_before_filter :repository, only: [:new, :create]
+class ProjectsController < ApplicationController
+  skip_before_filter :authenticate_user!, only: [:show]
+  before_filter :project, except: [:new, :create]
+  before_filter :repository, except: [:new, :create]
 
   # Authorize
   before_filter :authorize_read_project!, except: [:index, :new, :create]
-  before_filter :authorize_admin_project!, only: [:edit, :update, :destroy, :transfer]
+  before_filter :authorize_admin_project!, only: [:edit, :update, :destroy, :transfer, :archive, :unarchive, :retry_import]
   before_filter :require_non_empty_project, only: [:blob, :tree, :graph]
 
   layout 'navless', only: [:new, :create, :fork]
@@ -19,23 +20,16 @@ class ProjectsController < Projects::ApplicationController
   end
 
   def create
-    @project = ::Projects::CreateContext.new(current_user, params[:project]).execute
+    @project = ::Projects::CreateService.new(current_user, params[:project]).execute
+    flash[:notice] = 'Project was successfully created.' if @project.saved?
 
     respond_to do |format|
-      flash[:notice] = 'Project was successfully created.' if @project.saved?
-      format.html do
-        if @project.saved?
-          redirect_to @project
-        else
-          render "new"
-        end
-      end
       format.js
     end
   end
 
   def update
-    status = ::Projects::UpdateContext.new(@project, current_user, params).execute
+    status = ::Projects::UpdateService.new(@project, current_user, params).execute
 
     respond_to do |format|
       if status
@@ -50,28 +44,55 @@ class ProjectsController < Projects::ApplicationController
   end
 
   def transfer
-    ::Projects::TransferContext.new(project, current_user, params).execute
+    ::Projects::TransferService.new(project, current_user, params).execute
   end
 
   def show
-    limit = (params[:limit] || 20).to_i
-    @events = @project.events.recent.limit(limit).offset(params[:offset] || 0)
+    if @project.import_in_progress?
+      redirect_to import_project_path(@project)
+      return
+    end
 
-    # Ensure project default branch is set if it possible
-    # Normally it defined on push or during creation
-    @project.discover_default_branch
+    return authenticate_user! unless @project.public? || current_user
+
+    limit = (params[:limit] || 20).to_i
+    @events = @project.events.recent
+    @events = event_filter.apply_filter(@events)
+    @events = @events.limit(limit).offset(params[:offset] || 0)
 
     respond_to do |format|
       format.html do
         if @project.empty_repo?
-          render "projects/empty"
+          render "projects/empty", layout: user_layout
         else
-          @last_push = current_user.recent_push(@project.id)
-          render :show
+          @last_push = current_user.recent_push(@project.id) if current_user
+          render :show, layout: user_layout
         end
       end
-      format.js
+      format.json { pager_json("events/_events", @events.count) }
     end
+  end
+
+  def import
+    if project.import_finished?
+      redirect_to @project
+      return
+    end
+  end
+
+  def retry_import
+    unless @project.import_failed?
+      redirect_to import_project_path(@project)
+    end
+
+    @project.import_url = params[:project][:import_url]
+
+    if @project.save
+      @project.reload
+      @project.import_retry
+    end
+
+    redirect_to import_project_path(@project)
   end
 
   def destroy
@@ -86,7 +107,7 @@ class ProjectsController < Projects::ApplicationController
   end
 
   def fork
-    @forked_project = ::Projects::ForkContext.new(project, current_user).execute
+    @forked_project = ::Projects::ForkService.new(project, current_user).execute
 
     respond_to do |format|
       format.html do
@@ -104,7 +125,8 @@ class ProjectsController < Projects::ApplicationController
   def autocomplete_sources
     @suggestions = {
       emojis: Emoji.names,
-      issues: @project.issues.select([:id, :title, :description]),
+      issues: @project.issues.select([:iid, :title, :description]),
+      mergerequests: @project.merge_requests.select([:iid, :title, :description]),
       members: @project.team.members.sort_by(&:username).map { |user| { username: user.username, name: user.name } }
     }
 
@@ -113,9 +135,31 @@ class ProjectsController < Projects::ApplicationController
     end
   end
 
+  def archive
+    return access_denied! unless can?(current_user, :archive_project, project)
+    project.archive!
+
+    respond_to do |format|
+      format.html { redirect_to @project }
+    end
+  end
+
+  def unarchive
+    return access_denied! unless can?(current_user, :archive_project, project)
+    project.unarchive!
+
+    respond_to do |format|
+      format.html { redirect_to @project }
+    end
+  end
+
   private
 
   def set_title
     @title = 'New Project'
+  end
+
+  def user_layout
+    current_user ? "projects" : "public_projects"
   end
 end

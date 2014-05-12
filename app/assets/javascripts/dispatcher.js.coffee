@@ -4,6 +4,7 @@ $ ->
 class Dispatcher
   constructor: () ->
     @initSearch()
+    @initHighlight()
     @initPageScripts()
 
   initPageScripts: ->
@@ -18,12 +19,17 @@ class Dispatcher
     switch page
       when 'projects:issues:index'
         Issues.init()
+      when 'projects:issues:show'
+        new Issue()
+      when 'projects:issues:new', 'projects:merge_requests:new'
+        GitLab.GfmAutoComplete.setup()
       when 'dashboard:show'
         new Dashboard()
+        new Activities()
       when 'projects:commit:show'
         new Commit()
       when 'groups:show', 'projects:show'
-        Pager.init(20, true)
+        new Activities()
       when 'projects:new', 'projects:edit'
         new Project()
       when 'projects:walls:show'
@@ -44,5 +50,16 @@ class Dispatcher
 
 
   initSearch: ->
-    autocomplete_json = $('.search-autocomplete-json').data('autocomplete-opts')
-    new SearchAutocomplete(autocomplete_json)
+    opts = $('.search-autocomplete-opts')
+    path = opts.data('autocomplete-path')
+    project_id = opts.data('autocomplete-project-id')
+    project_ref = opts.data('autocomplete-project-ref')
+
+    new SearchAutocomplete(path, project_id, project_ref)
+
+  initHighlight: ->
+    $('.highlight pre code').each (i, e) ->
+      hljs.highlightBlock(e)
+      $(e).html($.map($(e).html().split("\n"), (line, i) ->
+        "<div class='line' id='LC" + (i + 1) + "'>" + line + "</div>"
+      ).join("\n"))

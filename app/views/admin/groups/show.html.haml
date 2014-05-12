@@ -6,7 +6,7 @@
     Edit
 %hr
 .row
-  .span6
+  .col-md-6
     .ui-box
       .title
         Group info:
@@ -25,27 +25,7 @@
             = @group.description
 
         %li
-          %span.light Owned by:
-          %strong
-            - if @group.owner
-              = link_to @group.owner_name, admin_user_path(@group.owner)
-            - else
-              (deleted)
-          .pull-right
-            = link_to "#", class: "btn btn-small change-owner-link" do
-              %i.icon-edit
-              Change owner
-        %li.change-owner-holder.hide.bgred
-          .form-holder
-            %strong.cred New Owner:
-            = form_for [:admin, @group] do |f|
-              = users_select_tag(:"group[owner_id]")
-              .prepend-top-10
-                = f.submit 'Change Owner', class: "btn btn-remove"
-                = link_to "Cancel", "#", class: "btn change-owner-cancel-link"
-
-        %li
-          %span.light Created at:
+          %span.light Created on:
           %strong
             = @group.created_at.stamp("March 1, 1999")
 
@@ -59,14 +39,16 @@
           %li
             %strong
               = link_to project.name_with_namespace, [:admin, project]
+              %span.label.label-gray
+                = repository_size(project)
             %span.pull-right.light
               %span.monospace= project.path_with_namespace + ".git"
 
-  .span6
+  .col-md-6
     .ui-box
       .title
         Add user(s) to the group:
-      .ui-box-body.form-holder
+      .body.form-holder
         %p.light
           Read more about project permissions
           %strong= link_to "here", help_permissions_path, class: "vlink"
@@ -75,7 +57,7 @@
           %div
             = users_select_tag(:user_ids, multiple: true)
           %div.prepend-top-10
-            = select_tag :group_access, options_for_select(UsersGroup.group_access_roles), class: "project-access-select chosen"
+            = select_tag :group_access, options_for_select(UsersGroup.group_access_roles), class: "project-access-select select2"
           %hr
           = submit_tag 'Add users into group', class: "btn btn-create"
     .ui-box
@@ -92,4 +74,5 @@
               = link_to user.name, admin_user_path(user)
             %span.pull-right.light
               = member.human_access
-
+              = link_to group_users_group_path(@group, member), data: { confirm: remove_user_from_group_message(@group, user) }, method: :delete, remote: true, class: "btn-tiny btn btn-remove", title: 'Remove user from group' do
+                %i.icon-minus.icon-white

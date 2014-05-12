@@ -4,22 +4,53 @@
  * the top of the compiled file, but it's generally better to create a new file per style scope.
  *= require jquery.ui.gitlab
  *= require jquery.atwho
- *= require chosen
  *= require select2
+ *= require highlightjs.min
  *= require_self
+ *= require nprogress
+ *= require nprogress-bootstrap
 */
 
+@import "main/variables.scss";
+@import "main/mixins.scss";
+@import "main/fonts.scss";
+@import "main/layout.scss";
+
 /**
- * GitLab bootstrap:
+ * Customized Twitter bootstrap
  */
-@import "gitlab_bootstrap.scss";
+@import 'gl_bootstrap';
 
-@import "common.scss";
-@import "selects.scss";
+/**
+ * Font icons
+ *
+ */
+@import "font-awesome";
 
+/**
+ * Generic css (forms, nav etc):
+ */
+@import "generic/avatar.scss";
+@import "generic/common.scss";
+@import "generic/typography.scss";
+@import "generic/buttons.scss";
+@import "generic/blocks.scss";
+@import "generic/ui_box.scss";
+@import "generic/issue_box.scss";
+@import "generic/files.scss";
+@import "generic/lists.scss";
+@import "generic/flash.scss";
+@import "generic/forms.scss";
+@import "generic/selects.scss";
+@import "generic/highlight.scss";
+
+/**
+ * Page specific styles (issues, projects etc):
+ */
 @import "sections/header.scss";
 @import "sections/nav.scss";
 @import "sections/commits.scss";
+@import "sections/diff.scss";
 @import "sections/issues.scss";
 @import "sections/projects.scss";
 @import "sections/snippets.scss";
@@ -38,7 +69,11 @@
 @import "sections/wall.scss";
 @import "sections/dashboard.scss";
 @import "sections/stat_graph.scss";
+@import "sections/groups.scss";
 
+/**
+ * Code highlight
+ */
 @import "highlight/white.scss";
 @import "highlight/dark.scss";
 @import "highlight/solarized_dark.scss";
@@ -57,4 +92,3 @@
  * Styles for JS behaviors.
  */
 @import "behaviors.scss";
-

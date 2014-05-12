@@ -20,10 +20,13 @@ GET /users
     "skype": "",
     "linkedin": "",
     "twitter": "",
+    "website_url": "",
     "extern_uid": "john.smith",
     "provider": "provider_name",
-    "theme_id": 1
-    "color_scheme_id": 2
+    "theme_id": 1,
+    "color_scheme_id": 2,
+    "is_admin": false,
+    "can_create_group": true
   },
   {
     "id": 2,
@@ -36,10 +39,14 @@ GET /users
     "skype": "",
     "linkedin": "",
     "twitter": "",
+    "website_url": "",
     "extern_uid": "jack.smith",
     "provider": "provider_name",
-    "theme_id": 1
-    "color_scheme_id": 3
+    "theme_id": 1,
+    "color_scheme_id": 3,
+    "is_admin": false,
+    "can_create_group": true,
+    "can_create_project": true
   }
 ]
 ```
@@ -69,10 +76,14 @@ Parameters:
   "skype": "",
   "linkedin": "",
   "twitter": "",
+  "website_url": "",
   "extern_uid": "john.smith",
   "provider": "provider_name",
-  "theme_id": 1
-  "color_scheme_id": 2
+  "theme_id": 1,
+  "color_scheme_id": 2,
+  "is_admin": false,
+  "can_create_group": true,
+  "can_create_project": true
 }
 ```
 
@@ -87,17 +98,20 @@ POST /users
 
 Parameters:
 
-+ `email` (required)          - Email
-+ `password` (required)       - Password
-+ `username` (required)       - Username
-+ `name` (required)           - Name
-+ `skype` (optional)          - Skype ID
-+ `linkedin` (optional)       - Linkedin
-+ `twitter` (optional)        - Twitter account
-+ `projects_limit` (optional) - Number of projects user can create
-+ `extern_uid` (optional)     - External UID
-+ `provider` (optional)       - External provider name
-+ `bio` (optional)            - User's bio
++ `email` (required)            - Email
++ `password` (required)         - Password
++ `username` (required)         - Username
++ `name` (required)             - Name
++ `skype` (optional)            - Skype ID
++ `linkedin` (optional)         - Linkedin
++ `twitter` (optional)          - Twitter account
++ `website_url` (optional)      - Website url
++ `projects_limit` (optional)   - Number of projects user can create
++ `extern_uid` (optional)       - External UID
++ `provider` (optional)         - External provider name
++ `bio` (optional)              - User's bio
++ `admin` (optional)            - User is admin - true or false (default)
++ `can_create_group` (optional) - User can create groups - true or false
 
 
 ## User modification
@@ -117,10 +131,13 @@ Parameters:
 + `skype`                             - Skype ID
 + `linkedin`                          - Linkedin
 + `twitter`                           - Twitter account
++ `website_url`                       - Website url
 + `projects_limit`                    - Limit projects each user can create
 + `extern_uid`                        - External UID
 + `provider`                          - External provider name
 + `bio`                               - User's bio
++ `admin` (optional)                  - User is admin - true or false (default)
++ `can_create_group` (optional)       - User can create groups - true or false
 
 Note, at the moment this method does only return a 404 error, even in cases where a 409 (Conflict) would
 be more appropriate, e.g. when renaming the email address to some existing one.
@@ -162,11 +179,11 @@ GET /user
   "skype": "",
   "linkedin": "",
   "twitter": "",
-  "theme_id": 1
-  "color_scheme_id": 2
+  "website_url": "",
+  "theme_id": 1,
+  "color_scheme_id": 2,
   "is_admin": false,
   "can_create_group" : true,
-  "can_create_team" : true,
   "can_create_project" : true
 }
 ```
@@ -184,14 +201,14 @@ GET /user/keys
 [
   {
     "id": 1,
-    "title" : "Public key"
+    "title" : "Public key",
     "key": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4
       596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa++Oi7Qkr8prgHc4
       soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0=",
   },
   {
     "id": 3,
-    "title" : "Another Public key"
+    "title" : "Another Public key",
     "key": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4
       596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa++Oi7Qkr8prgHc4
       soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0="
@@ -219,7 +236,7 @@ Parameters:
 ```json
 {
   "id": 1,
-  "title" : "Public key"
+  "title" : "Public key",
   "key": "ssh-rsa AAAAB3NzaC1yc2EAAAABJQAAAIEAiPWx6WM4lhHNedGfBpPJNPpZ7yKu+dnn1SJejgt4
       596k6YjzGGphH2TUxwKzxcKDKKezwkpfnxPkSMkuEspGRt/aZZ9wa++Oi7Qkr8prgHc4
       soW6NUlfDzpvZK2H5E7eQaSeP3SAwGmQKUFHCddNaP0L+hM7zhFNzjFvpaMgJw0="

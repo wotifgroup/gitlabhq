@@ -45,6 +45,7 @@ module TestEnv
   def disable_mailer
     NotificationService.any_instance.stub(mailer: double.as_null_object)
   end
+
   def enable_mailer
     NotificationService.any_instance.unstub(:mailer)
   end
@@ -68,7 +69,12 @@ module TestEnv
       remove_repository: true,
       update_repository_head: true,
       add_key: true,
-      remove_key: true
+      remove_key: true,
+      version: '6.3.0'
+    )
+
+    Gitlab::Satellite::MergeAction.any_instance.stub(
+      merge!: true,
     )
 
     Gitlab::Satellite::Satellite.any_instance.stub(
@@ -84,6 +90,10 @@ module TestEnv
     Repository.any_instance.stub(
       size: 12.45
     )
+
+    ActivityObserver.any_instance.stub(
+      current_user: double("current_user", id: 1)
+    )
   end
 
   def clear_repo_dir(namespace, name)
@@ -92,13 +102,24 @@ module TestEnv
     FileUtils.rm_rf File.join(testing_path(), "#{name}.wiki.git")
   end
 
+  def reset_satellite_dir
+    setup_stubs
+    [
+      %W(git reset --hard --quiet),
+      %W(git clean -fx --quiet),
+      %W(git checkout --quiet origin/master)
+    ].each do |git_cmd|
+      system(*git_cmd, chdir: seed_satellite_path)
+    end
+  end
+
   # Create a repo and it's satellite
   def create_repo(namespace, name)
     setup_stubs
     repo = repo(namespace, name)
 
     # Symlink tmp/repositories/gitlabhq to tmp/test-git-base-path/gitlabhq
-    system("ln -s -f #{seed_repo_path()} #{repo}")
+    FileUtils.ln_sf(seed_repo_path, repo)
     create_satellite(repo, namespace, name)
   end
 
@@ -162,12 +183,11 @@ module TestEnv
     # Symlink tmp/satellite/gitlabhq to tmp/test-git-base-path/satellite/gitlabhq, create the directory if it doesn't exist already
     satellite_dir = File.dirname(satellite_repo)
     FileUtils.mkdir_p(satellite_dir) unless File.exists?(satellite_dir)
-    system("ln -s -f #{seed_satellite_path} #{satellite_repo}")
+    FileUtils.ln_sf(seed_satellite_path, satellite_repo)
   end
 
   def create_temp_repo(path)
     FileUtils.mkdir_p path
-    command = "git init --quiet --bare #{path};"
-    system(command)
+    system(*%W(git init --quiet --bare -- #{path}))
   end
 end

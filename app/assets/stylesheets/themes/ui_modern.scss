@@ -17,7 +17,8 @@
     &.navbar-gitlab {
       .navbar-inner {
         background: #345;
-        .app_logo {
+        border-bottom: 1px solid #234;
+        .app_logo, .navbar-toggle {
           &:hover {
             background-color: #234;
           }
@@ -25,6 +26,12 @@
         .separator {
           background: #234;
           border-left: 1px solid #456;
+        }
+        .nav > li > a {
+          color: #89A;
+        }
+        .search-input {
+          border-color: #89A;
         }
       }
     }

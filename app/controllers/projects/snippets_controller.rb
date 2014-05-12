@@ -14,8 +14,6 @@ class Projects::SnippetsController < Projects::ApplicationController
   # Allow destroy snippet
   before_filter :authorize_admin_project_snippet!, only: [:destroy]
 
-  layout 'projects'
-
   respond_to :html
 
   def index
@@ -50,8 +48,8 @@ class Projects::SnippetsController < Projects::ApplicationController
 
   def show
     @note = @project.notes.new(noteable: @snippet)
-    @target_type = :snippet
-    @target_id = @snippet.id
+    @notes = @snippet.notes.fresh
+    @noteable = @snippet
   end
 
   def destroy

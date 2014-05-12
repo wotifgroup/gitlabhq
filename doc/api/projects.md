@@ -2,7 +2,7 @@
 
 ### List projects
 
-Get a list of projects owned by the authenticated user.
+Get a list of projects accessible by the authenticated user.
 
 ```
 GET /projects
@@ -11,60 +11,99 @@ GET /projects
 ```json
 [
   {
-    "id": 3,
-    "name": "rails",
+    "id": 4,
     "description": null,
     "default_branch": "master",
+    "public": false,
+    "visibility_level": 0,
+    "ssh_url_to_repo": "git@example.com:diaspora/diaspora-client.git",
+    "http_url_to_repo": "http://example.com/diaspora/diaspora-client.git",
+    "web_url": "http://example.com/diaspora/diaspora-client",
     "owner": {
-      "id": 1,
-      "username": "john_smith",
-      "email": "john@example.com",
-      "name": "John Smith",
-      "blocked": false,
-      "created_at": "2012-05-23T08:00:58Z"
+      "id": 3,
+      "name": "Diaspora",
+      "created_at": "2013-09-30T13: 46: 02Z"
     },
-    "public": true,
-    "path": "rails",
-    "path_with_namespace": "rails/rails",
-    "issues_enabled": false,
-    "merge_requests_enabled": false,
-    "wall_enabled": true,
-    "wiki_enabled": true,
-    "created_at": "2012-05-23T08:05:02Z",
-    "last_activity_at": "2012-05-23T08:05:02Z"
-  },
-  {
-    "id": 5,
-    "name": "gitlab",
-    "description": null,
-    "default_branch": "api",
-    "owner": {
-      "id": 1,
-      "username": "john_smith",
-      "email": "john@example.com",
-      "name": "John Smith",
-      "blocked": false,
-      "created_at": "2012-05-23T08:00:58Z"
-    },
-    "public": true,
-    "path": "gitlab",
-    "path_with_namespace": "randx/gitlab",
+    "name": "Diaspora Client",
+    "name_with_namespace": "Diaspora / Diaspora Client",
+    "path": "diaspora-client",
+    "path_with_namespace": "diaspora/diaspora-client",
     "issues_enabled": true,
     "merge_requests_enabled": true,
-    "wall_enabled": true,
+    "wall_enabled": false,
     "wiki_enabled": true,
-    "snippets_enabled": true,
-    "created_at": "2012-05-30T12:49:20Z",
-    "last_activity_at": "2012-05-23T08:05:02Z"
+    "snippets_enabled": false,
+    "created_at": "2013-09-30T13: 46: 02Z",
+    "last_activity_at": "2013-09-30T13: 46: 02Z",
+    "namespace": {
+      "created_at": "2013-09-30T13: 46: 02Z",
+      "description": "",
+      "id": 3,
+      "name": "Diaspora",
+      "owner_id": 1,
+      "path": "diaspora",
+      "updated_at": "2013-09-30T13: 46: 02Z"
+    }
+  },
+  {
+    "id": 6,
+    "description": null,
+    "default_branch": "master",
+    "public": false,
+    "visibility_level": 0,
+    "ssh_url_to_repo": "git@example.com:brightbox/puppet.git",
+    "http_url_to_repo": "http://example.com/brightbox/puppet.git",
+    "web_url": "http://example.com/brightbox/puppet",
+    "owner":  {
+      "id": 4,
+      "name": "Brightbox",
+      "created_at": "2013-09-30T13:46:02Z"
+    },
+    "name": "Puppet",
+    "name_with_namespace": "Brightbox / Puppet",
+    "path": "puppet",
+    "path_with_namespace": "brightbox/puppet",
+    "issues_enabled": true,
+    "merge_requests_enabled": true,
+    "wall_enabled": false,
+    "wiki_enabled": true,
+    "snippets_enabled": false,
+    "created_at": "2013-09-30T13:46:02Z",
+    "last_activity_at": "2013-09-30T13:46:02Z",
+    "namespace":  {
+      "created_at": "2013-09-30T13:46:02Z",
+      "description": "",
+      "id": 4,
+      "name": "Brightbox",
+      "owner_id": 1,
+      "path": "brightbox",
+      "updated_at": "2013-09-30T13:46:02Z"
+    }
   }
 ]
 ```
 
 
+#### List owned projects
+
+Get a list of projects owned by the authenticated user.
+
+```
+GET /projects/owned
+```
+
+#### List ALL projects
+
+Get a list of all GitLab projects (admin only).
+
+```
+GET /projects/all
+```
+
 ### Get single project
 
-Get a specific project, identified by project ID or NAME, which is owned by the authentication user.
-Currently namespaced projects cannot retrieved by name.
+Get a specific project, identified by project ID or NAMESPACE/PROJECT_NAME , which is owned by the authentication user.
+If using namespaced projects call make sure that the NAMESPACE/PROJECT_NAME is URL-encoded, eg. `/api/v3/projects/diaspora%2Fdiaspora` (where `/` is represented by `%2F`).
 
 ```
 GET /projects/:id
@@ -72,33 +111,53 @@ GET /projects/:id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 
 ```json
 {
-  "id": 5,
-  "name": "gitlab",
-  "name_with_namespace": "GitLab / gitlabhq",
+  "id": 3,
   "description": null,
-  "default_branch": "api",
+  "default_branch": "master",
+  "public": false,
+  "visibility_level": 0,
+  "ssh_url_to_repo": "git@example.com:diaspora/diaspora-project-site.git",
+  "http_url_to_repo": "http://example.com/diaspora/diaspora-project-site.git",
+  "web_url": "http://example.com/diaspora/diaspora-project-site",
   "owner": {
-    "id": 1,
-    "username": "john_smith",
-    "email": "john@example.com",
-    "name": "John Smith",
-    "blocked": false,
-    "created_at": "2012-05-23T08:00:58Z"
+    "id": 3,
+    "name": "Diaspora",
+    "created_at": "2013-09-30T13: 46: 02Z"
   },
-  "public": true,
-  "path": "gitlab",
-  "path_with_namespace": "randx/gitlab",
+  "name": "Diaspora Project Site",
+  "name_with_namespace": "Diaspora / Diaspora Project Site",
+  "path": "diaspora-project-site",
+  "path_with_namespace": "diaspora/diaspora-project-site",
   "issues_enabled": true,
   "merge_requests_enabled": true,
-  "wall_enabled": true,
+  "wall_enabled": false,
   "wiki_enabled": true,
-  "snippets_enabled": true,
-  "created_at": "2012-05-30T12:49:20Z",
-  "last_activity_at": "2012-05-23T08:05:02Z"
+  "snippets_enabled": false,
+  "created_at": "2013-09-30T13: 46: 02Z",
+  "last_activity_at": "2013-09-30T13: 46: 02Z",
+  "namespace": {
+    "created_at": "2013-09-30T13: 46: 02Z",
+    "description": "",
+    "id": 3,
+    "name": "Diaspora",
+    "owner_id": 1,
+    "path": "diaspora",
+    "updated_at": "2013-09-30T13: 46: 02Z"
+  }
+  "permissions": {
+    "project_access": {
+      "access_level": 10,
+      "notification_level": 3
+    },
+    "group_access": {
+      "access_level": 50,
+      "notification_level": 3
+    }
+  }
 }
 ```
 
@@ -113,7 +172,7 @@ GET /projects/:id/events
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 
 ```json
 
@@ -182,25 +241,16 @@ POST /projects
 Parameters:
 
 + `name` (required) - new project name
++ `namespace_id` (optional) - namespace for the new project (defaults to user)
 + `description` (optional) - short project description
-+ `default_branch` (optional) - 'master' by default
 + `issues_enabled` (optional)
 + `wall_enabled` (optional)
 + `merge_requests_enabled` (optional)
 + `wiki_enabled` (optional) 
 + `snippets_enabled` (optional)
-+ `public` (optional)
-
-**Project access levels**
-
-The project access levels are defined in the `user_project.rb` class. Currently, these levels are recognized:
-
-```
-  GUEST     = 10
-  REPORTER  = 20
-  DEVELOPER = 30
-  MASTER    = 40
-```
++ `public` (optional) - if `true` same as setting visibility_level = 20
++ `visibility_level` (optional)
+* `import_url` (optional)
 
 
 ### Create project for user
@@ -222,8 +272,21 @@ Parameters:
 + `merge_requests_enabled` (optional)
 + `wiki_enabled` (optional) 
 + `snippets_enabled` (optional)
-+ `public` (optional)
++ `public` (optional) - if `true` same as setting visibility_level = 20
++ `visibility_level` (optional)
 
+
+## Remove project
+
+Removes project with all resources(issues, merge requests etc)
+
+```
+DELETE /projects/:id
+```
+
+Parameters:
+
++ `id` (required) - The ID of a project
 
 
 ## Team members
@@ -238,7 +301,7 @@ GET /projects/:id/members
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `query` (optional) - Query string to search for members
 
 
@@ -252,7 +315,7 @@ GET /projects/:id/members/:user_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `user_id` (required) - The ID of a user
 
 ```json
@@ -261,7 +324,7 @@ Parameters:
   "username": "john_smith",
   "email": "john@example.com",
   "name": "John Smith",
-  "blocked": false,
+  "state": "active",
   "created_at": "2012-05-23T08:00:58Z",
   "access_level": 40
 }
@@ -280,7 +343,7 @@ POST /projects/:id/members
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `user_id` (required) - The ID of a user to add
 + `access_level` (required) - Project access level
 
@@ -295,7 +358,7 @@ PUT /projects/:id/members/:user_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `user_id` (required) - The ID of a team member
 + `access_level` (required) - Project access level
 
@@ -310,7 +373,7 @@ DELETE /projects/:id/members/:user_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `user_id` (required) - The ID of a team member
 
 This method is idempotent and can be called multiple times with the same parameters.
@@ -331,7 +394,7 @@ GET /projects/:id/hooks
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 
 
 ### Get project hook
@@ -344,13 +407,17 @@ GET /projects/:id/hooks/:hook_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `hook_id` (required) - The ID of a project hook
 
 ```json
 {
   "id": 1,
   "url": "http://example.com/hook",
+  "project_id": 3,
+  "push_events": "true",
+  "issues_events": "true",
+  "merge_requests_events": "true",
   "created_at": "2012-10-12T17:04:47Z"
 }
 ```
@@ -366,8 +433,11 @@ POST /projects/:id/hooks
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `url` (required) - The hook URL
++ `push_events` - Trigger hook on push events
++ `issues_events` - Trigger hook on issues events
++ `merge_requests_events` - Trigger hook on merge_requests events
 
 
 ### Edit project hook
@@ -380,9 +450,12 @@ PUT /projects/:id/hooks/:hook_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `hook_id` (required) - The ID of a project hook
 + `url` (required) - The hook URL
++ `push_events` - Trigger hook on push events
++ `issues_events` - Trigger hook on issues events
++ `merge_requests_events` - Trigger hook on merge_requests events
 
 
 ### Delete project hook
@@ -396,7 +469,7 @@ DELETE /projects/:id/hooks/:hook_id
 
 Parameters:
 
-+ `id` (required) - The ID or NAME of a project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `hook_id` (required) - The ID of hook to delete
 
 Note the JSON response differs if the hook is available or not. If the project hook
@@ -415,8 +488,57 @@ GET /projects/:id/repository/branches
 
 Parameters:
 
-+ `id` (required) - The ID of the project
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 
+```json
+[
+  {
+    "name":"async",
+    "commit": {
+      "id":"a2b702edecdf41f07b42653eb1abe30ce98b9fca",
+      "parents": [{
+        "id":"3f94fc7c85061973edc9906ae170cc269b07ca55"
+      }],
+      "tree": "c68537c6534a02cc2b176ca1549f4ffa190b58ee",
+      "message":"give caolan credit where it's due (up top)",
+      "author": {
+        "name":"Jeremy Ashkenas",
+        "email":"jashkenas@example.com"
+      },
+      "committer": {
+        "name":"Jeremy Ashkenas",
+        "email":"jashkenas@example.com"
+      },
+      "authored_date":"2010-12-08T21:28:50+00:00",
+      "committed_date":"2010-12-08T21:28:50+00:00"
+    },
+    "protected":false
+  },
+  {
+    "name": "gh-pages",
+    "commit": {
+      "id": "101c10a60019fe870d21868835f65c25d64968fc",
+      "parents": [{
+        "id": "9c15d2e26945a665131af5d7b6d30a06ba338aaa"
+      }],
+      "tree": "fb5cc9d45da3014b17a876ad539976a0fb9b352a",
+      "message": "Underscore.js 1.5.2",
+      "author": {
+        "name": "Jeremy Ashkenas",
+        "email": "jashkenas@example.com"
+      },
+      "committer": {
+        "name": "Jeremy Ashkenas",
+        "email": "jashkenas@example.com"
+      },
+      "authored_date": "2013-09-07T12: 58: 21+00: 00",
+      "committed_date": "2013-09-07T12: 58: 21+00: 00"
+    },
+    "protected": false
+  }
+]
+
+```
 
 ### List single branch
 
@@ -428,7 +550,7 @@ GET /projects/:id/repository/branches/:branch
 
 Parameters:
 
-+ `id` (required) - The ID of the project.
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `branch` (required) - The name of the branch.
 
 
@@ -442,7 +564,7 @@ PUT /projects/:id/repository/branches/:branch/protect
 
 Parameters:
 
-+ `id` (required) - The ID of the project.
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `branch` (required) - The name of the branch.
 
 
@@ -456,7 +578,7 @@ PUT /projects/:id/repository/branches/:branch/unprotect
 
 Parameters:
 
-+ `id` (required) - The ID of the project.
++ `id` (required) - The ID or NAMESPACE/PROJECT_NAME of a project
 + `branch` (required) - The name of the branch.
 
 
@@ -484,3 +606,18 @@ DELETE /projects/:id/fork
 Parameter:
 
 + `id` (required) - The ID of the project
+
+
+## Search for projects by name
+
+Search for projects by name which are public or the calling user has access to
+
+```
+GET /projects/search/:query
+```
+
+Parameters:
+
++   query (required) - A string contained in the project name
++   per_page (optional) - number of projects to return per page
++   page (optional) - the page to retrieve

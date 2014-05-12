@@ -2,14 +2,14 @@
 #
 # Table name: keys
 #
-#  id         :integer          not null, primary key
-#  user_id    :integer
-#  created_at :datetime
-#  updated_at :datetime
-#  key        :text
-#  title      :string(255)
-#  identifier :string(255)
-#  type       :string(255)
+#  id          :integer          not null, primary key
+#  user_id     :integer
+#  created_at  :datetime         not null
+#  updated_at  :datetime         not null
+#  key         :text
+#  title       :string(255)
+#  type        :string(255)
+#  fingerprint :string(255)
 #
 
 require 'digest/md5'
@@ -53,7 +53,7 @@ class Key < ActiveRecord::Base
     Tempfile.open('gitlab_key_file') do |file|
       file.puts key
       file.rewind
-      cmd_output, cmd_status = popen("ssh-keygen -lf #{file.path}", '/tmp')
+      cmd_output, cmd_status = popen(%W(ssh-keygen -lf #{file.path}), '/tmp')
     end
 
     if cmd_status.zero?

@@ -56,8 +56,9 @@ module CommitsHelper
     end
   end
 
-  def commit_to_html commit, project
-    escape_javascript(render 'projects/commits/commit', commit: commit, project: project) unless commit.nil?
+  def commit_to_html(commit, project, inline = true)
+    template = inline ? "inline_commit" : "commit"
+    escape_javascript(render "projects/commits/#{template}", commit: commit, project: project) unless commit.nil?
   end
 
   def diff_line_content(line)
@@ -93,6 +94,21 @@ module CommitsHelper
     crumbs.html_safe
   end
 
+  # Return Project default branch, if it present in array
+  # Else - first branch in array (mb last actual branch)
+  def commit_default_branch(project, branches)
+    branches.include?(project.default_branch) ? branches.delete(project.default_branch) : branches.pop
+  end
+
+  # Returns the sorted alphabetically links to branches, separated by a comma
+  def commit_branches_links(project, branches)
+    branches.sort.map { |branch| link_to(branch, project_tree_path(project, branch)) }.join(", ").html_safe
+  end
+
+  def get_old_file(project, commit, diff)
+    project.repository.blob_at(commit.parent_id, diff.old_path) if commit.parent_id
+  end
+
   protected
 
   # Private: Returns a link to a person. If the person has a matching user and
@@ -106,14 +122,17 @@ module CommitsHelper
   def commit_person_link(commit, options = {})
     source_name = commit.send "#{options[:source]}_name".to_sym
     source_email = commit.send "#{options[:source]}_email".to_sym
+    
+    user = User.find_for_commit(source_email, source_name)
+    person_name = user.nil? ? source_name : user.name
+    person_email = user.nil? ? source_email : user.email
+    
     text = if options[:avatar]
-            avatar = image_tag(gravatar_icon(source_email, options[:size]), class: "avatar #{"s#{options[:size]}" if options[:size]}", width: options[:size], alt: "")
-            %Q{#{avatar} <span class="commit-#{options[:source]}-name">#{source_name}</span>}
+            avatar = image_tag(avatar_icon(person_email, options[:size]), class: "avatar #{"s#{options[:size]}" if options[:size]}", width: options[:size], alt: "")
+            %Q{#{avatar} <span class="commit-#{options[:source]}-name">#{person_name}</span>}
           else
-            source_name
+            person_name
           end
-
-    user = User.where('name like ? or email like ?', source_name, source_email).first
 
     options = {
       class: "commit-#{options[:source]}-link has_tooltip",

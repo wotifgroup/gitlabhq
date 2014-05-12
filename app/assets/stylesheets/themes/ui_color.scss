@@ -17,7 +17,8 @@
     &.navbar-gitlab {
       .navbar-inner {
         background: #547;
-        .app_logo {
+        border-bottom: 1px solid #435;
+        .app_logo, .navbar-toggle {
           &:hover {
             background-color: #435;
           }
@@ -26,7 +27,17 @@
           background: #435;
           border-left: 1px solid #658;
         }
+        .nav > li > a {
+          color: #98B;
+        }
+        .search-input {
+          border-color: #98B;
+        }
       }
     }
+  }
+
+  .nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
+    background: #769;
   }
 }

@@ -1,7 +1,44 @@
 module API
   module APIHelpers
+    PRIVATE_TOKEN_HEADER = "HTTP_PRIVATE_TOKEN"
+    PRIVATE_TOKEN_PARAM = :private_token
+    SUDO_HEADER ="HTTP_SUDO"
+    SUDO_PARAM = :sudo
+
     def current_user
-      @current_user ||= User.find_by_authentication_token(params[:private_token] || env["HTTP_PRIVATE_TOKEN"])
+      private_token = (params[PRIVATE_TOKEN_PARAM] || env[PRIVATE_TOKEN_HEADER]).to_s
+      @current_user ||= User.find_by(authentication_token: private_token)
+      identifier = sudo_identifier()
+
+      # If the sudo is the current user do nothing
+      if (identifier && !(@current_user.id == identifier || @current_user.username == identifier))
+        render_api_error!('403 Forbidden: Must be admin to use sudo', 403) unless @current_user.is_admin?
+        @current_user = User.by_username_or_id(identifier)
+        not_found!("No user id or username for: #{identifier}") if @current_user.nil?
+      end
+
+      @current_user
+    end
+
+    def sudo_identifier()
+      identifier ||= params[SUDO_PARAM] ||= env[SUDO_HEADER]
+
+      # Regex for integers
+      if (!!(identifier =~ /^[0-9]+$/))
+        identifier.to_i
+      else
+        identifier
+      end
+    end
+
+    def set_current_user_for_thread
+      Thread.current[:current_user] = current_user
+
+      begin
+        yield
+      ensure
+        Thread.current[:current_user] = nil
+      end
     end
 
     def user_project
@@ -10,7 +47,7 @@ module API
     end
 
     def find_project(id)
-      project = Project.find_by_id(id) || Project.find_with_namespace(id)
+      project = Project.find_with_namespace(id) || Project.find_by(id: id)
 
       if project && can?(current_user, :read_project, project)
         project
@@ -37,6 +74,10 @@ module API
       end
     end
 
+    def authorize_admin_project
+      authorize! :admin_project, user_project
+    end
+
     def can?(object, action, subject)
       abilities.allowed?(object, action, subject)
     end
@@ -55,7 +96,7 @@ module API
     def attributes_for_keys(keys)
       attrs = {}
       keys.each do |key|
-        attrs[key] = params[key] if params[key].present?
+        attrs[key] = params[key] if params[key].present? or (params.has_key?(key) and params[key] == false)
       end
       attrs
     end

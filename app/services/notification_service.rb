@@ -17,9 +17,16 @@ class NotificationService
     end
   end
 
+  # Always notify user about email added to profile
+  def new_email(email)
+    if email.user
+      mailer.new_email_email(email.id)
+    end
+  end
+
   # When create an issue we should send next emails:
   #
-  #  * issue assignee if his notification level is not Disabled
+  #  * issue assignee if their notification level is not Disabled
   #  * project team members with notification level higher then Participating
   #
   def new_issue(issue, current_user)
@@ -28,8 +35,8 @@ class NotificationService
 
   # When we close an issue we should send next emails:
   #
-  #  * issue author if his notification level is not Disabled
-  #  * issue assignee if his notification level is not Disabled
+  #  * issue author if their notification level is not Disabled
+  #  * issue assignee if their notification level is not Disabled
   #  * project team members with notification level higher then Participating
   #
   def close_issue(issue, current_user)
@@ -38,8 +45,8 @@ class NotificationService
 
   # When we reassign an issue we should send next emails:
   #
-  #  * issue old assignee if his notification level is not Disabled
-  #  * issue new assignee if his notification level is not Disabled
+  #  * issue old assignee if their notification level is not Disabled
+  #  * issue new assignee if their notification level is not Disabled
   #
   def reassigned_issue(issue, current_user)
     reassign_resource_email(issue, issue.project, current_user, 'reassigned_issue_email')
@@ -48,7 +55,7 @@ class NotificationService
 
   # When create a merge request we should send next emails:
   #
-  #  * mr assignee if his notification level is not Disabled
+  #  * mr assignee if their notification level is not Disabled
   #
   def new_merge_request(merge_request, current_user)
     new_resource_email(merge_request, merge_request.target_project, 'new_merge_request_email')
@@ -56,8 +63,8 @@ class NotificationService
 
   # When we reassign a merge_request we should send next emails:
   #
-  #  * merge_request old assignee if his notification level is not Disabled
-  #  * merge_request assignee if his notification level is not Disabled
+  #  * merge_request old assignee if their notification level is not Disabled
+  #  * merge_request assignee if their notification level is not Disabled
   #
   def reassigned_merge_request(merge_request, current_user)
     reassign_resource_email(merge_request, merge_request.target_project, current_user, 'reassigned_merge_request_email')
@@ -65,8 +72,8 @@ class NotificationService
 
   # When we close a merge request we should send next emails:
   #
-  #  * merge_request author if his notification level is not Disabled
-  #  * merge_request assignee if his notification level is not Disabled
+  #  * merge_request author if their notification level is not Disabled
+  #  * merge_request assignee if their notification level is not Disabled
   #  * project team members with notification level higher then Participating
   #
   def close_mr(merge_request, current_user)
@@ -75,16 +82,16 @@ class NotificationService
 
   # When we merge a merge request we should send next emails:
   #
-  #  * merge_request author if his notification level is not Disabled
-  #  * merge_request assignee if his notification level is not Disabled
+  #  * merge_request author if their notification level is not Disabled
+  #  * merge_request assignee if their notification level is not Disabled
   #  * project team members with notification level higher then Participating
   #
-  def merge_mr(merge_request)
+  def merge_mr(merge_request, current_user)
     recipients = reject_muted_users([merge_request.author, merge_request.assignee], merge_request.target_project)
     recipients = recipients.concat(project_watchers(merge_request.target_project)).uniq
 
     recipients.each do |recipient|
-      mailer.merged_merge_request_email(recipient.id, merge_request.id)
+      mailer.merged_merge_request_email(recipient.id, merge_request.id, current_user.id)
     end
   end
 
@@ -104,20 +111,22 @@ class NotificationService
 
     # ignore gitlab service messages
     return true if note.note =~ /\A_Status changed to closed_/
+    return true if note.note =~ /\A_mentioned in / && note.system == true
 
     opts = { noteable_type: note.noteable_type, project_id: note.project_id }
-
-    if note.commit_id.present?
-      opts.merge!(commit_id: note.commit_id)
-    else
-      opts.merge!(noteable_id: note.noteable_id)
-    end
 
     target = note.noteable
     if target.respond_to?(:participants)
       recipients = target.participants
     else
       recipients = note.mentioned_users
+    end
+
+    if note.commit_id.present?
+      opts.merge!(commit_id: note.commit_id)
+      recipients << note.commit_author
+    else
+      opts.merge!(noteable_id: note.noteable_id)
     end
 
     # Get users who left comment in thread
@@ -146,6 +155,23 @@ class NotificationService
 
   def update_team_member(users_project)
     mailer.project_access_granted_email(users_project.id)
+  end
+
+  def new_group_member(users_group)
+    mailer.group_access_granted_email(users_group.id)
+  end
+
+  def update_group_member(users_group)
+    mailer.group_access_granted_email(users_group.id)
+  end
+
+  def project_was_moved(project)
+    recipients = project.team.members
+    recipients = reject_muted_users(recipients, project)
+
+    recipients.each do |recipient|
+      mailer.project_was_moved_email(project.id, recipient.id)
+    end
   end
 
   protected
@@ -177,10 +203,10 @@ class NotificationService
     users.reject do |user|
       next user.notification.disabled? unless project
 
-      tm = project.users_projects.find_by_user_id(user.id)
+      tm = project.users_projects.find_by(user_id: user.id)
 
       if !tm && project.group
-        tm = project.group.users_groups.find_by_user_id(user.id)
+        tm = project.group.users_groups.find_by(user_id: user.id)
       end
 
       # reject users who globally disabled notification and has no membership
@@ -232,7 +258,7 @@ class NotificationService
     recipients.delete(current_user)
 
     recipients.each do |recipient|
-      mailer.send(method, recipient.id, target.id, target.assignee_id_was)
+      mailer.send(method, recipient.id, target.id, target.assignee_id_was, current_user.id)
     end
   end
 

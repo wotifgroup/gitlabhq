@@ -204,41 +204,6 @@ Parameters:
 ]
 ```
 
-
-## List repository commits
-
-Get a list of repository commits in a project.
-
-```
-GET /projects/:id/repository/commits
-```
-
-Parameters:
-
-+ `id` (required) - The ID of a project
-+ `ref_name` (optional) - The name of a repository branch or tag or if not given the default branch
-
-```json
-[
-  {
-    "id": "ed899a2f4b50b4370feeea94676502b42383c746",
-    "short_id": "ed899a2f4b5",
-    "title": "Replace sanitize with escape once",
-    "author_name": "Dmitriy Zaporozhets",
-    "author_email": "dzaporozhets@sphereconsultinginc.com",
-    "created_at": "2012-09-20T11:50:22+03:00"
-  },
-  {
-    "id": "6104942438c14ec7bd21c6cd5bd995272b3faff6",
-    "short_id": "6104942438c",
-    "title": "Sanitize for network graph",
-    "author_name": "randx",
-    "author_email": "dmitriy.zaporozhets@gmail.com",
-    "created_at": "2012-09-20T09:06:12+03:00"
-  }
-]
-```
-
 ## List repository tree
 
 Get a list of repository files and directories in a project.
@@ -290,12 +255,12 @@ Parameters:
 ```
 
 
-## Raw blob content
+## Raw file content
 
-Get the raw file contents for a file.
+Get the raw file contents for a file by commit sha and path.
 
 ```
-GET /projects/:id/repository/commits/:sha/blob
+GET /projects/:id/repository/blobs/:sha
 ```
 
 Parameters:
@@ -303,3 +268,30 @@ Parameters:
 + `id` (required) - The ID of a project
 + `sha` (required) - The commit or branch name
 + `filepath` (required) - The path the file
+
+
+## Raw blob content
+
+Get the raw file contents for a blob by blob sha.
+
+```
+GET /projects/:id/repository/raw_blobs/:sha
+```
+
+Parameters:
+
++ `id` (required) - The ID of a project
++ `sha` (required) - The blob sha
+
+
+## Get file archive
+
+Get a an archive of the repository
+
+```
+GET /projects/:id/repository/archive
+```
+
+Parameters:
++ `id` (required) - The ID of a project
++ `sha` (optional) - The commit sha to download defaults to the tip of the default branch

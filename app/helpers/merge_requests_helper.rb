@@ -1,8 +1,9 @@
 module MergeRequestsHelper
   def new_mr_path_from_push_event(event)
+    target_project = event.project.forked_from_project || event.project
     new_project_merge_request_path(
       event.project,
-      new_mr_from_push_event(event, event.project)
+      new_mr_from_push_event(event, target_project)
     )
   end
 
@@ -36,7 +37,7 @@ module MergeRequestsHelper
 
   def merge_path_description(merge_request, separator)
     if merge_request.for_fork?
-      "Project:Branches: #{@merge_request.source_project.path_with_namespace}:#{@merge_request.source_branch} #{separator} #{@merge_request.target_project.path_with_namespace}:#{@merge_request.target_branch}"
+      "Project:Branches: #{@merge_request.source_project_path}:#{@merge_request.source_branch} #{separator} #{@merge_request.target_project.path_with_namespace}:#{@merge_request.target_branch}"
     else
       "Branches: #{@merge_request.source_branch} #{separator} #{@merge_request.target_branch}"
     end

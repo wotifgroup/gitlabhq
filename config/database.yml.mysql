@@ -7,7 +7,8 @@ production:
   reconnect: false
   database: gitlabhq_production
   pool: 10
-  username: root
+  reaping_frequency: 10
+  username: git
   password: "secure password"
   # host: localhost
   # socket: /tmp/mysql.sock
